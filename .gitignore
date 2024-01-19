@@ -32,3 +32,6 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Ignore the json file for terrform
+./01_basics_n_setup/1_terraform_gcp/*.json
