@@ -35,3 +35,4 @@ terraform.rc
 
 # Ignore the json file for terrform
 ./01_basics_n_setup/1_terraform_gcp/*.json
+ny-rides.json
