@@ -172,3 +172,6 @@ scratch*
 magic-zoomcamp
 *.json
 
+#Json GCP
+de-zoomcamp-2024.json
+de-zoomcamp-2024-owner.json
