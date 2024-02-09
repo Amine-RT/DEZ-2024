@@ -2,6 +2,7 @@ import io
 import os
 import requests
 import pandas as pd
+import pyarrow as pa
 from google.cloud import storage
 
 """
@@ -14,9 +15,54 @@ Pre-reqs:
 # services = ['fhv','green','yellow']
 init_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/'
 # switch out the bucketname
-BUCKET = os.environ.get("GCP_GCS_BUCKET", "dtc-data-lake-bucketname")
+BUCKET = os.environ.get("GCP_GCS_BUCKET", "mage-zoomcamp_art")
+table_schema_green = pa.schema(
+    [
+        ('VendorID',pa.string()),
+        ('lpep_pickup_datetime',pa.timestamp('s')),
+        ('lpep_dropoff_datetime',pa.timestamp('s')),
+        ('store_and_fwd_flag',pa.string()),
+        ('RatecodeID',pa.int64()),
+        ('PULocationID',pa.int64()),
+        ('DOLocationID',pa.int64()),
+        ('passenger_count',pa.int64()),
+        ('trip_distance',pa.float64()),
+        ('fare_amount',pa.float64()),
+        ('extra',pa.float64()),
+        ('mta_tax',pa.float64()),
+        ('tip_amount',pa.float64()),
+        ('tolls_amount',pa.float64()),
+        ('ehail_fee',pa.float64()),
+        ('improvement_surcharge',pa.float64()),
+        ('total_amount',pa.float64()),
+        ('payment_type',pa.int64()),
+        ('trip_type',pa.int64()),
+        ('congestion_surcharge',pa.float64()),
+    ]
+)
 
+table_schema_yellow = pa.schema(
+   [
+        ('VendorID', pa.float64()), 
+        ('tpep_pickup_datetime', pa.timestamp('s')), 
+        ('tpep_dropoff_datetime', pa.timestamp('s')),
+        ('store_and_fwd_flag', pa.string()),
+        ('RatecodeID', pa.int64()),
+        ('PULocationID', pa.int64()), 
+        ('DOLocationID', pa.int64()), 
+        ('passenger_count', pa.int64()), 
+        ('trip_distance', pa.float64()), 
+        ('fare_amount',pa.float64()), 
+        ('extra',pa.float64()), 
+        ('mta_tax', pa.float64()), 
+        ('tip_amount', pa.float64()), 
+        ('tolls_amount', pa.float64()),
+        ('improvement_surcharge', pa.float64()), 
+        ('total_amount', pa.float64()), 
+        ('payment_type', pa.int64()), 
+        ('congestion_surcharge', pa.float64())]
 
+)
 def upload_to_gcs(bucket, object_name, local_file):
     """
     Ref: https://cloud.google.com/storage/docs/uploading-objects#storage-upload-object-python
@@ -51,7 +97,7 @@ def web_to_gcs(year, service):
         # read it back into a parquet file
         df = pd.read_csv(file_name, compression='gzip')
         file_name = file_name.replace('.csv.gz', '.parquet')
-        df.to_parquet(file_name, engine='pyarrow')
+        df.to_parquet(file_name, engine='pyarrow', schema=table_schema_yellow)
         print(f"Parquet: {file_name}")
 
         # upload it to gcs 
@@ -59,8 +105,8 @@ def web_to_gcs(year, service):
         print(f"GCS: {service}/{file_name}")
 
 
-web_to_gcs('2019', 'green')
-web_to_gcs('2020', 'green')
-# web_to_gcs('2019', 'yellow')
-# web_to_gcs('2020', 'yellow')
+#web_to_gcs('2019', 'green')
+#web_to_gcs('2020', 'green')
+web_to_gcs('2019', 'yellow')
+web_to_gcs('2020', 'yellow')
 
