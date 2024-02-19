@@ -136,6 +136,10 @@ NB: Advanced example with previous knowledge about ML.
 Those steps create a copy of our model into an API that we will run on Docker, then it will be accessible by sending a POST request to the API with a JSON parameters such as :
 >> {"instances": [{"passenger_count":1, "trip_distance":12.2, "PULocationID":"193", "DOLocationID":"264", "payment_type":"2","fare_amount":20.4,"tolls_amount":0.0}]}
 
+
+Launch again docker :
+docker run -p 8501:8501 --mount type=bind,source=`pwd`/serving_dir/tip_model,target=/models/tip_model -e MODEL_NAME=tip_model -t tensorflow/serving &
+
 ---
 ### Homework
 

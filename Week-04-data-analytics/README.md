@@ -50,4 +50,123 @@ By this stage of the course you should have already:
 ![alt text](image-1.png)
 
 ### 4.2.1 - Start Your dbt Project BigQuery and dbt Cloud
-- Create a new dbt projcet
+- Create a new dbt project
+- initialize dbt project :
+    - ![alt text](image-2.png)
+- Create a new branch to be able to start editing the project
+- update `dbt_project.yml`
+    - update name of the project under `name`:
+```
+models:
+  taxi_rides_ny:
+    # Applies to all files under models/example/
+    # example:
+    #  +materialized: table
+```
+- run `dbt build` and commit
+
+### 4.3.1 - Build the First dbt Models
+- Anatomy of a dbt model: written code vs compiled Sources
+- Materialisations: table, view, incremental, ephemeral
+- Seeds, sources and ref
+- Jinja and Macros
+- Packages
+- Variables
+
+- Overall of the process :
+![alt text](image-3.png)
+
+- 4 types of materializations in dbt Cloud :
+    - Ephemeral : not materialised in the BQ, temporary and exit only for the duration of single dbt run
+    - view : virtual tables created by dbt that can be queried like regular tables
+    - table : physical representations of data that are created and sotred in the database
+    - incremental : feature of dbt allow for efficient update to existing tables
+- Example in our taxi trip data :
+![alt text](image-4.png)
+
+- we will use for example :
+    - Sources (from the BQ) : `from {{ source('staging','yellow_trip_data_2021_01') }}`
+    - Seeds (used for data not huge and usually doesn't change frequrently ) `from {{ ref('taxi_zone_loolup')}}`
+    - ref : from dbt model `from {{ ref ('stg_green_tripdata')}}`
+
+- Create under models/staging/schema.yml :
+```
+version: 2
+
+sources:
+  - name: staging
+    database:
+      de-zoomcamp-2024
+      # For postgres:
+      #database: production
+    schema:
+      nytaxi
+
+      # loaded_at_field: record_loaded_at
+    tables:
+      - name: green_tripdata_non_partitoned
+      - name:
+          yellow_tripdata_non_partitoned
+```
+
+- After this build the whole project by : `dbt build`
+- we can add packages by creating at the dbt home folder a file `package.yml` containing for example :
+```
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 1.1.1
+```
+
+- exemple to use : add this function from the package in our green data sql : `{{ dbt_utils.generate_surrogate_key(['vendorid', 'lpep_pickup_datetime']) }} as tripid,`
+
+- Variables : we can define variable : example : `{{ var('...') }}`
+```
+{% if var('is_test_run', default=true) %}
+
+  limit 100
+
+{% endif %}
+```
+### 4.3.2 - Testing and Documenting the Project
+
+- Tests
+- Documentation
+
+- examples :
+  - Using gencodes : 
+    - https://hub.getdbt.com/dbt-labs/codegen/latest/
+``` 
+{% set models_to_generate = codegen.get_models(directory='marts', prefix='fct_') %}
+{{ codegen.generate_model_yaml(
+    model_names = models_to_generate
+) }}
+```
+
+  - Tests :
+  ```
+              tests:
+                - unique:
+                    severity: warn
+                - not_null:
+                    severity: warn
+  ``` 
+  ```
+              tests:
+              - relationships:
+                  to: ref('taxi_zone_lookup')
+                  field: locationid
+                  severity: warn
+  ```
+  ```
+              tests: 
+              - accepted_values:
+                  values: "{{ var('payment_type_values') }}"
+                  severity: warn
+                  quote: false
+  ```
+
+### 4.4.1 - Deployment Using dbt Cloud (Alternative A)
+- Deployment: development environment vs production
+  - go to environment and create a new env for prod
+  - create a new job and use the schedule
+- dbt cloud: scheduler, sources and hosted documentation
