@@ -7,6 +7,8 @@ import requests
 from google.cloud import storage
 import logging
 import subprocess
+import pyarrow.csv as pv
+
 
 """
 Pre-reqs: 
@@ -20,45 +22,24 @@ init_url = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/'
 BUCKET = os.environ.get("GCP_GCS_BUCKET", "mage-zoomcamp_art")
 
 
-    # 0   VendorID               218480 non-null  float64
-    # 1   tpep_pickup_datetime   237993 non-null  object 
-    # 2   tpep_dropoff_datetime  237993 non-null  object 
-    # 3   passenger_count        218480 non-null  float64
-    # 4   trip_distance          237993 non-null  float64
-    # 5   RatecodeID             218480 non-null  float64
-    # 6   store_and_fwd_flag     218480 non-null  object 
-    # 7   PULocationID           237993 non-null  int64  
-    # 8   DOLocationID           237993 non-null  int64  
-    # 9   payment_type           218480 non-null  float64
-    # 10  fare_amount            237993 non-null  float64
-    # 11  extra                  237993 non-null  float64
-    # 12  mta_tax                237993 non-null  float64
-    # 13  tip_amount             237993 non-null  float64
-    # 14  tolls_amount           237993 non-null  float64
-    # 15  improvement_surcharge  237993 non-null  float64
-    # 16  total_amount           237993 non-null  float64
-    # 17  congestion_surcharge   237993 non-null  float64
+#  0   dispatching_base_num    566426 non-null  object 
+#  1   pickup_datetime         566426 non-null  object 
+#  2   dropoff_datetime        566426 non-null  object 
+#  3   PULocationID            400323 non-null  float64
+#  4   DOLocationID            539612 non-null  float64
+#  5   SR_Flag                 0 non-null       float64
+#  6   Affiliated_base_number  563479 non-null  object
+
 
 table_schema_fhv = pa.schema(
    [
-        ('VendorID', pa.string()), 
-        ('tpep_pickup_datetime', pa.timestamp('s')), 
-        ('tpep_dropoff_datetime', pa.timestamp('s')), 
-        ('passenger_count', pa.int64()), 
-        ('trip_distance', pa.float64()), 
-        ('RatecodeID', pa.string()), 
-        ('store_and_fwd_flag', pa.string()), 
-        ('PULocationID', pa.int64()), 
-        ('DOLocationID', pa.int64()), 
-        ('payment_type', pa.int64()), 
-        ('fare_amount',pa.float64()), 
-        ('extra',pa.float64()), 
-        ('mta_tax', pa.float64()), 
-        ('tip_amount', pa.float64()), 
-        ('tolls_amount', pa.float64()), 
-        ('improvement_surcharge', pa.float64()), 
-        ('total_amount', pa.float64()), 
-        ('congestion_surcharge', pa.float64())
+        ('dispatching_base_num', pa.string()), 
+        ('pickup_datetime', pa.timestamp('s')), 
+        ('dropOff_datetime', pa.timestamp('s')), 
+        ('PUlocationID', pa.float64()), 
+        ('DOlocationID', pa.float64()), 
+        ('SR_Flag', pa.float64()), 
+        ('Affiliated_base_number', pa.string())
         ]
 )
 
@@ -123,6 +104,7 @@ def format_to_parquet(src_file, service):
         table = table.cast(table_schema_green)
         
     elif service == 'fhv':
+        #table = pv.read_csv(src_file)
         table = table.cast(table_schema_fhv)
 
     pq.write_table(table, src_file.replace('.csv', '.parquet'))

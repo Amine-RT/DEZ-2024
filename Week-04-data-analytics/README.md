@@ -170,3 +170,30 @@ packages:
   - go to environment and create a new env for prod
   - create a new job and use the schedule
 - dbt cloud: scheduler, sources and hosted documentation
+
+### 4.5.1 - Visualising the data with Google Data Studio (Alternative A)
+- if online we could use Google Data Studio
+- if locally we can install Metabase using docker and run it locally
+
+
+### Homework:
+
+- uploading the data fhv 2019 in our bucket
+- creating the tables :
+```
+-- Creating external table referring to gcs path
+CREATE OR REPLACE EXTERNAL TABLE `de-zoomcamp-2024.nytaxi.external_fhv_tripdata`
+OPTIONS (
+  format = 'PARQUET',
+  uris = ['gs://mage-zoomcamp_art/fhv/fhv_tripdata_2019-*.parquet']
+);
+-- Check yello trip data
+SELECT COUNT(*) FROM de-zoomcamp-2024.nytaxi.external_fhv_tripdata;
+
+-- Create a non partitioned table from external table
+CREATE OR REPLACE TABLE de-zoomcamp-2024.nytaxi.fhv_tripdata_non_partitoned AS
+SELECT * FROM `de-zoomcamp-2024.nytaxi.external_fhv_tripdata`;
+```
+
+- for the FHV table, check the table structure here : https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_fhv.pdf
+- 
